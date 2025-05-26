@@ -1,0 +1,29 @@
+---
+config:
+  layout: dagre
+---
+flowchart TD
+ subgraph IntermediateApp["New Helper Microservice"]
+    direction LR
+        InputAdapter["Input (Its own Mailbox i.e. JMS / API Door i.e.REST)"]
+        Transformer["Contivo Makeover Logic (Reused!)"]
+        Router["Camel/Spring Road Map"]
+        OutputAdapter@{ label: "Output (Sends to Consumer's Old Spot)" }
+  end
+    InputAdapter --> Transformer
+    Transformer --> Router
+    Router --> OutputAdapter
+    ProducerApp["Producer (App Sending)"] -- OR Event (Http) --> InputAdapter
+    OutputAdapter -- Changed Event --> ConsumerMQ["Consumer MQ (Original Mailbox)"]
+    OutputAdapter -- OR Changed Event --> ConsumerWS["Consumer Web Service (Original Call)"]
+    ConsumerMQ --> C_MQ["Consumer (Gets from MQ, no change for them!)"]
+    ConsumerWS --> C_WS["Consumer (Gets Web Call, no change for them!)"]
+    ProducerApp -- Event (MQ) --> n1["Producer MQ ( NEW! )"]
+    n1 --> InputAdapter
+    OutputAdapter@{ shape: rect}
+    ConsumerMQ@{ shape: h-cyl}
+    n1@{ shape: h-cyl}
+    style ConsumerWS fill:#B2DFDB,stroke:#333,stroke-width:1px,shape:hexagon
+    style C_MQ fill:#D1F2EB,stroke:#333,stroke-width:1px
+    style C_WS fill:#D1F2EB,stroke:#333,stroke-width:1px
+    style IntermediateApp fill:#CCEEFF,stroke:#333,stroke-width:2px
